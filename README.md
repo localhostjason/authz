@@ -1,4 +1,6 @@
-# User Role
+# Authz
 
-1. load webserver 库
-2. router 封装一层
+1. Casbin 库
+2. router 封装
+
+例子见 main.go

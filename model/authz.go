@@ -16,7 +16,7 @@ func NewAuthRootGroup(userRole string) *AuthRootGroup {
 	return &AuthRootGroup{UserRole: userRole}
 }
 
-// LoadCasbinConfig 不使用默认。去加载配置
+// LoadCasbinConfig 不使用默认。可自定义， 默认内置 text config
 func (ag *AuthRootGroup) LoadCasbinConfig(modeType, modelText, modelFile string) {
 	ag.CasBinModelType = modeType
 	ag.CasBinModelText = modelText

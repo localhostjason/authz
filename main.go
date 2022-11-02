@@ -37,21 +37,21 @@ func getU(c *gin.Context) {
 	c.JSON(200, store.GetAllPolicy())
 }
 
-func SetView(r *gin.Engine) error {
+func SetView(r *gin.Engine) (err error) {
 
 	api := r.Group("api")
 
 	rootGroup := model.NewAuthRootGroup("admin")
-	err := rootGroup.LoadCasbin()
+	err = rootGroup.LoadCasbin()
 	if err != nil {
-		return err
+		return
 	}
 
 	g := rootGroup.CreateRootGroup(api)
 
 	AddViewUser(g.Group("用户管理", "user"))
 
-	return nil
+	return
 }
 
 func main() {
