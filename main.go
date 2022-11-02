@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/localhostjason/authz/model"
+	"github.com/localhostjason/authz/store"
 	"github.com/localhostjason/webserver/daemonx"
-	"role/model"
-	"role/store"
 )
 
 func addRole(c *gin.Context) {

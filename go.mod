@@ -1,4 +1,4 @@
-module role
+module github.com/localhostjason/authz
 
 go 1.19
 

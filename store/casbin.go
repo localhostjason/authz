@@ -24,6 +24,10 @@ func NewCasBin(modelType, configFile, configText string) *CasBin {
 		configText = casbinText
 	}
 
+	if configFile == "" {
+		configFile = GetRBACMConfig()
+	}
+
 	return &CasBin{ModelType: modelType, ConfigFile: configFile, ConfigText: configText}
 }
 

@@ -2,12 +2,12 @@ package model
 
 import (
 	"github.com/gin-gonic/gin"
+	. "github.com/localhostjason/authz/store"
 	"github.com/localhostjason/webserver/db"
 	"github.com/localhostjason/webserver/server/util/ue"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"path"
-	. "role/store"
 	"runtime/debug"
 	"sync"
 )

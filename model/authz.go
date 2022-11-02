@@ -2,7 +2,7 @@ package model
 
 import (
 	"github.com/gin-gonic/gin"
-	"role/store"
+	"github.com/localhostjason/authz/store"
 )
 
 type AuthRootGroup struct {
