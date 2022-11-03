@@ -22,10 +22,20 @@ func addRole(c *gin.Context) {
 	c.Status(201)
 }
 
+func deleteRole(c *gin.Context) {
+
+}
+
+func updateRole(c *gin.Context) {
+
+}
+
 func AddViewUserItem(g *model.AuthGroup) {
 	g.AddUrl("获取个人信息", model.GET, "info", getU)
 	g.AddUrl("更改个人密码", model.GET, "password", getU)
 	g.AddUrl("增加role", model.GET, "role", addRole)
+	g.AddUrl("删除role", model.GET, "del_role", deleteRole)
+	g.AddUrl("更新role", model.GET, "update_role", updateRole)
 }
 
 func AddViewUser(g *model.AuthGroup) {

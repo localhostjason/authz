@@ -3,21 +3,40 @@ package store
 import (
 	"errors"
 	"github.com/localhostjason/webserver/db"
+	"gorm.io/gorm"
 )
 
 type CasbinRule struct {
-	ID      uint   `json:"id" gorm:"primaryKey;autoIncrement"`
-	PType   string `json:"p_type" gorm:"column:ptype" description:"策略类型"`
-	Role    string `json:"role" gorm:"column:v0" description:"角色ID"`
-	Path    string `json:"path" gorm:"column:v1" description:"api路径"`
-	Method  string `json:"method" gorm:"column:v2" description:"访问方法"`
-	V3      string `gorm:"column:v3"`
-	V4      string `gorm:"column:v4"`
-	V5      string `gorm:"column:v5" `
-	V6      string `gorm:"column:v6" `
-	V7      string `gorm:"column:v7" `
-	ApiName string `json:"api_name" gorm:"column:api_name" description:"api名称"`
-	Desc    string `json:"desc" description:"策略描述"`
+	ID        uint   `json:"id" gorm:"primaryKey;autoIncrement"`
+	PType     string `json:"p_type" gorm:"column:ptype" description:"策略类型"`
+	Role      string `json:"role" gorm:"column:v0" description:"角色"`
+	Path      string `json:"path" gorm:"column:v1" description:"api路径 obj"`
+	Method    string `json:"method" gorm:"column:v2" description:"访问方法 act"`
+	V3        string `gorm:"column:v3"`
+	V4        string `gorm:"column:v4"`
+	V5        string `gorm:"column:v5" `
+	V6        string `gorm:"column:v6" `
+	V7        string `gorm:"column:v7" `
+	ApiName   string `json:"-"`
+	GroupName string `json:"-"`
+	Desc      string `json:"desc" description:"策略描述"`
+}
+
+func GetCasBins() []CasbinRule {
+	var casbinRule []CasbinRule
+	db.DB.Find(&casbinRule)
+	for i, _ := range casbinRule {
+		apiName, groupName := GetApiName(casbinRule[i].Path)
+		casbinRule[i].ApiName = apiName
+		casbinRule[i].GroupName = groupName
+	}
+	return casbinRule
+}
+
+func GetApiName(path string) (string, string) {
+	var authz Authz
+	db.DB.Where("url = ?", path).First(&authz)
+	return authz.ApiName, authz.GroupName
 }
 
 func (c *CasbinRule) Create() error {
@@ -27,11 +46,15 @@ func (c *CasbinRule) Create() error {
 	return nil
 }
 
-func (c *CasbinRule) UpdateApiName(data string) error {
-	if err := db.DB.Model(c).Where("v0 = ? AND v1 = ? AND v2 = ?", c.Role, c.Path, c.Method).Update("api_name", data).Error; err != nil {
-		return err
+func (c *CasbinRule) UpdateDesc(id uint, desc string) error {
+	var rule CasbinRule
+	err := db.DB.First(&rule, &CasbinRule{ID: id}).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.New("未找到策略")
 	}
-	return nil
+
+	rule.Desc = desc
+	return db.DB.Save(&rule).Error
 }
 
 func (c *CasbinRule) Update(role, path, method string) error {
@@ -65,8 +88,8 @@ type Authz struct {
 	ID        int    `json:"id"`
 	GroupName string `json:"group_name"`
 	ApiName   string `json:"api_name"`
-	Url       string `json:"url"`
-	Method    string `json:"method"`
+	Url       string `json:"url" description:"对象 obj"`
+	Method    string `json:"method" description:"act"`
 }
 
 func init() {
