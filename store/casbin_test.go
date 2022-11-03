@@ -39,7 +39,7 @@ func TestCasbinRemove(t *testing.T) {
 	_ = c.Create()
 	t.Log(GetAllPolicy())
 
-	err := c.Delete()
+	err := c.Delete(1)
 	assert.Nil(t, err)
 	t.Log(GetAllPolicy())
 }
@@ -60,7 +60,7 @@ func TestCasbinUpdate(t *testing.T) {
 	_ = c.Create()
 	t.Log(GetAllPolicy())
 
-	err := c.Update("test", "/api/user/info", "PUT")
+	err := c.Update(1, "test", "/api/user/info", "PUT")
 	assert.Nil(t, err)
 	t.Log(GetAllPolicy())
 }
@@ -81,7 +81,7 @@ func TestCasbinUpdateApiName(t *testing.T) {
 	_ = c.Create()
 	t.Log(GetAllPolicy())
 
-	err := c.UpdateApiName("测试")
+	err := c.UpdateDesc(1, "测试")
 	assert.Nil(t, err)
 	t.Log(GetAllPolicy())
 }

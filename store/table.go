@@ -12,13 +12,13 @@ type CasbinRule struct {
 	Role      string `json:"role" gorm:"column:v0" description:"角色"`
 	Path      string `json:"path" gorm:"column:v1" description:"api路径 obj"`
 	Method    string `json:"method" gorm:"column:v2" description:"访问方法 act"`
-	V3        string `gorm:"column:v3"`
-	V4        string `gorm:"column:v4"`
-	V5        string `gorm:"column:v5" `
-	V6        string `gorm:"column:v6" `
-	V7        string `gorm:"column:v7" `
-	ApiName   string `json:"-"`
-	GroupName string `json:"-"`
+	V3        string `json:"-" gorm:"column:v3"`
+	V4        string `json:"-" gorm:"column:v4"`
+	V5        string `json:"-" gorm:"column:v5" `
+	V6        string `json:"-" gorm:"column:v6" `
+	V7        string `json:"-" gorm:"column:v7" `
+	ApiName   string `json:"api_name" gorm:"-"`
+	GroupName string `json:"group_name" gorm:"-"`
 	Desc      string `json:"desc" description:"策略描述"`
 }
 
@@ -46,9 +46,9 @@ func (c *CasbinRule) Create() error {
 	return nil
 }
 
-func (c *CasbinRule) UpdateDesc(id uint, desc string) error {
+func (c *CasbinRule) UpdateDesc(id int, desc string) error {
 	var rule CasbinRule
-	err := db.DB.First(&rule, &CasbinRule{ID: id}).Error
+	err := db.DB.First(&rule, &CasbinRule{ID: uint(id)}).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.New("未找到策略")
 	}
@@ -57,8 +57,14 @@ func (c *CasbinRule) UpdateDesc(id uint, desc string) error {
 	return db.DB.Save(&rule).Error
 }
 
-func (c *CasbinRule) Update(role, path, method string) error {
-	updated, err := E.UpdatePolicy([]string{c.Role, c.Path, c.Method}, []string{role, path, method})
+func (c *CasbinRule) Update(id int, role, path, method string) error {
+	var rule CasbinRule
+	err := db.DB.First(&rule, &CasbinRule{ID: uint(id)}).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.New("未找到策略")
+	}
+
+	updated, err := E.UpdatePolicy([]string{rule.Role, rule.Path, rule.Method}, []string{role, path, method})
 	if err != nil {
 		return err
 	}
@@ -68,8 +74,14 @@ func (c *CasbinRule) Update(role, path, method string) error {
 	return nil
 }
 
-func (c *CasbinRule) Delete() error {
-	ok, err := E.RemoveFilteredNamedPolicy(c.PType, 0, c.Role, c.Path, c.Method)
+func (c *CasbinRule) Delete(id int) error {
+	var rule CasbinRule
+	err := db.DB.First(&rule, &CasbinRule{ID: uint(id)}).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.New("未找到策略")
+	}
+
+	ok, err := E.RemoveFilteredNamedPolicy(rule.PType, 0, rule.Role, rule.Path, rule.Method)
 	if err != nil {
 		return err
 	}
@@ -79,8 +91,8 @@ func (c *CasbinRule) Delete() error {
 	return nil
 }
 
-func (c *CasbinRule) List() [][]string {
-	policy := E.GetFilteredPolicy(0, c.Role)
+func GetPolicyByRole(role string) [][]string {
+	policy := E.GetFilteredPolicy(0, role)
 	return policy
 }
 

@@ -23,11 +23,17 @@ func addRole(c *gin.Context) {
 }
 
 func deleteRole(c *gin.Context) {
-
+	var casbin store.CasbinRule
+	err := casbin.Delete(1)
+	fmt.Println(err)
+	c.JSON(200, store.GetAllPolicy())
 }
 
 func updateRole(c *gin.Context) {
-
+	var casbin store.CasbinRule
+	err := casbin.Update(1, "admin", "/api/user/password", "GET")
+	fmt.Println(err)
+	c.JSON(200, store.GetAllPolicy())
 }
 
 func AddViewUserItem(g *model.AuthGroup) {
@@ -43,8 +49,12 @@ func AddViewUser(g *model.AuthGroup) {
 }
 
 func getU(c *gin.Context) {
+	data := map[string]interface{}{
+		"policy":    store.GetAllPolicy(),
+		"db_policy": store.GetCasBins(),
+	}
 
-	c.JSON(200, store.GetAllPolicy())
+	c.JSON(200, data)
 }
 
 func SetView(r *gin.Engine) (err error) {
