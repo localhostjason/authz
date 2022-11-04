@@ -87,26 +87,35 @@ func (ag *AuthGroup) addHandler(method string, url string, h gin.HandlerFunc) {
 
 func (ag *AuthGroup) AddUrl(name, method, url string, h gin.HandlerFunc, permissionRoles ...string) {
 	GroupName := ag.getPermissionGroup()
-	handler := permissionHandler(h, ag.Role)
+	handler := permissionHandler(h, name, method, ag.Role)
 	ag.addHandler(method, url, handler)
 
 	fullUrl := path.Join(ag.RouterGroup.BasePath(), url)
 	initAuthz(GroupName, name, fullUrl, method)
 }
 
-func permissionHandler(h gin.HandlerFunc, role string) gin.HandlerFunc {
+func permissionHandler(h gin.HandlerFunc, action, method, role string) gin.HandlerFunc {
 	var lock sync.Mutex
 	return func(c *gin.Context) {
 		defer func() {
+			result := "成功"
 			if r := recover(); r != nil {
 				if err, ok := r.(*ue.Error); ok {
+					result = err.Error()
 					c.AbortWithStatusJSON(http.StatusUnprocessableEntity, err)
 				} else {
+					result = "内部错误"
 					log.Error(string(debug.Stack()))
 					c.AbortWithStatus(http.StatusInternalServerError)
 				}
 			}
 
+			logMsg, _ := c.Get("OpLog")
+			if OpLogHook != nil {
+				if info, ok := logMsg.(*ue.Info); ok {
+					OpLogHook(action, result, info.Msg)
+				}
+			}
 		}()
 
 		if !CasbinHasPermission(c, role) {

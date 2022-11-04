@@ -7,7 +7,7 @@ require (
 	github.com/casbin/casbin/v2 v2.56.0
 	github.com/casbin/gorm-adapter/v3 v3.12.1
 	github.com/gin-gonic/gin v1.8.1
-	github.com/localhostjason/webserver v0.0.0-20221102113014-6f0e80bc8a3e
+	github.com/localhostjason/webserver v0.0.0-20221104155018-128fab503ddf
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.0
 	gorm.io/gorm v1.24.0

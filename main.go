@@ -8,9 +8,23 @@ import (
 	"github.com/localhostjason/authz/store"
 	"github.com/localhostjason/webserver/daemonx"
 	"github.com/localhostjason/webserver/db"
+	"github.com/localhostjason/webserver/server/util/ue"
+	"github.com/localhostjason/webserver/server/util/uv"
 	uuid "github.com/satori/go.uuid"
 	"time"
 )
+
+const (
+	I_OP = "I_OP"
+)
+
+var iMap = map[string]ue.Info{
+	I_OP: {Code: I_OP, Msg: "测试ID: %v, 测试名称：%v"},
+}
+
+func init() {
+	ue.RegInfos(iMap)
+}
 
 type User struct {
 	middleware.User
@@ -66,7 +80,7 @@ func updateRole(c *gin.Context) {
 
 func AddViewUserItem(g *model.AuthGroup) {
 	g.AddUrl("获取个人信息", model.GET, "info", getU)
-	g.AddUrl("更改个人密码", model.GET, "password", getU)
+	g.AddUrl("更改个人密码", model.GET, "password", getU2)
 	g.AddUrl("增加role", model.GET, "role", addRole)
 	g.AddUrl("删除role", model.GET, "del_role", deleteRole)
 	g.AddUrl("更新role", model.GET, "update_role", updateRole)
@@ -82,6 +96,17 @@ func getU(c *gin.Context) {
 		"db_policy": store.GetCasBins(),
 	}
 
+	c.Set("OpLog", uv.OP(I_OP, "1", "hello"))
+	c.JSON(200, data)
+}
+
+func getU2(c *gin.Context) {
+	data := map[string]interface{}{
+		"policy":    store.GetAllPolicy(),
+		"db_policy": store.GetCasBins(),
+	}
+
+	//c.Set("OpLog", uv.OP(I_OP, "1", "hello"))
 	c.JSON(200, data)
 }
 
@@ -106,6 +131,9 @@ func SetView(r *gin.Engine) (err error) {
 
 	// 加载 casbin 必须已登录成功
 	rootGroup := model.NewAuthRootGroup("admin")
+	rootGroup.LoadOpLog(func(arg ...interface{}) {
+		fmt.Println("save op log to db:", arg)
+	})
 	err = rootGroup.LoadCasbin()
 	if err != nil {
 		return
