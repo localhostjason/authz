@@ -8,6 +8,8 @@ import (
 	"github.com/localhostjason/authz/store"
 	"github.com/localhostjason/webserver/daemonx"
 	"github.com/localhostjason/webserver/db"
+	uuid "github.com/satori/go.uuid"
+	"time"
 )
 
 type User struct {
@@ -17,12 +19,21 @@ type User struct {
 	Desc  string `json:"desc" gorm:"type:string;size:256"`
 }
 
-func (u *User) Info() {
-
+func InitUser() error {
+	user := User{
+		Role: "admin",
+	}
+	user.Username = "admin"
+	user.JwtKey = uuid.NewV4()
+	user.Time = time.Now()
+	user.SetPassword("123")
+	db.DB.FirstOrCreate(&user)
+	return nil
 }
 
 func init() {
 	db.RegTables(&User{})
+	db.AddInitHook(InitUser)
 }
 
 func addRole(c *gin.Context) {
@@ -81,6 +92,12 @@ func SetView(r *gin.Engine) (err error) {
 	jwt := middleware.NewJwt()
 	jwt.AddLog(func(arg ...interface{}) {
 		fmt.Println(111, arg)
+	})
+	//jwt.AuthenticatorHook(func(c *gin.Context, username string) error {
+	//	return errors.New("test error")
+	//})
+	jwt.LoginResponseHook(func(username, password string, info *map[string]interface{}) {
+		(*info)["tt"] = "tt"
 	})
 	err = jwt.AddAuth(apiAuth, api)
 	if err != nil {

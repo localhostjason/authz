@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/localhostjason/webserver/db"
@@ -14,6 +15,7 @@ import (
 var _c ConfigAuth
 
 const currentUserKey = "current_user"
+const currentPassword = "current_password"
 const loginFailedKey = "___login_failed"
 
 func AddAuth(authApi, authedApi *gin.RouterGroup) error {
@@ -102,22 +104,29 @@ func authenticator(c *gin.Context) (interface{}, error) {
 
 	userName := loginValues.Username
 	password := loginValues.Password
-	var user = &User{Username: userName}
 
 	// 直接记录下来， 不管成功与否， 后面看情况使用
-	c.Set(loginFailedKey, user)
+	c.Set(loginFailedKey, &User{Username: userName})
 
 	// 密码登录
-	err := db.DB.First(user).Error
+	var user User
+	err := db.DB.Where("username = ?", userName).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) || !user.CheckPassword(password) {
 		return nil, errors.New("用户名或者密码填写不对")
+	}
+
+	if JwtAuthenticatorHook != nil {
+		if err = JwtAuthenticatorHook(c, userName); err != nil {
+			return nil, err
+		}
 	}
 
 	// 注意这个不是idHandler的重复， 这里是给 loginResponse用的
 	// 验证的地方有两套流程
 	// 1. token 验证， 用到idHandler
 	// 2. 登录过程， 此时不会经过中间件，只是单纯的验证密码，发token,成功了调用 loginResponse,失败顿斯 unauthorized
-	c.Set(currentUserKey, user)
+	c.Set(currentUserKey, &user)
+	c.Set(currentPassword, password)
 	return user, nil
 
 }
@@ -126,6 +135,7 @@ func authorizator(data interface{}, c *gin.Context) bool {
 	if data == nil {
 		return false
 	}
+	fmt.Println("data", data)
 	return true
 }
 
@@ -167,6 +177,11 @@ func loginResponse(c *gin.Context, code int, token string, expire time.Time) {
 	now := time.Now()
 	user.LastLoginTime = &now
 	db.DB.Save(user)
+
+	if JwtLoginResponseHook != nil {
+		password, _ := c.Get(currentPassword)
+		JwtLoginResponseHook(user.Username, password.(string), &info)
+	}
 
 	AuthLog("LOGIN", user.Username, RemoteAddr(c), "登录", "成功")
 	c.JSON(http.StatusOK, info)

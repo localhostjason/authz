@@ -23,6 +23,14 @@ func (u *User) CheckPassword(password string) bool {
 	return err == nil
 }
 
+func (u *User) SetPassword(password string) {
+	b, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if err != nil {
+		return
+	}
+	u.Password = string(b)
+}
+
 func (u *User) GetInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"username":        u.Username,

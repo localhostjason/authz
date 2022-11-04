@@ -25,3 +25,24 @@ func SetView(r *gin.Engine) (err error) {
 	return
 }
 ````
+
+封装了一套简单的jwt,可不使用
+
+```golang
+
+    jwt := middleware.NewJwt()
+    
+    // 日志 函数 hook
+	jwt.AddLog(func(arg ...interface{}) {
+		fmt.Println(111, arg)
+	})
+    // 登录前的 验证 hook
+	//jwt.AuthenticatorHook(func(c *gin.Context, username string) error {
+	//	return errors.New("test error")
+	//})
+	
+	// 登录成功后 函数
+	jwt.LoginResponseHook(func(username, password string, info *map[string]interface{}) {
+		(*info)["tt"] = "tt"
+	})
+```
