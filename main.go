@@ -3,10 +3,27 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/localhostjason/authz/middleware"
 	"github.com/localhostjason/authz/model"
 	"github.com/localhostjason/authz/store"
 	"github.com/localhostjason/webserver/daemonx"
+	"github.com/localhostjason/webserver/db"
 )
+
+type User struct {
+	middleware.User
+	Descx string `json:"descx"`
+	Role  string `json:"role" gorm:"type:string;size:64;not null"`
+	Desc  string `json:"desc" gorm:"type:string;size:256"`
+}
+
+func (u *User) Info() {
+
+}
+
+func init() {
+	db.RegTables(&User{})
+}
 
 func addRole(c *gin.Context) {
 	r := store.CasbinRule{
@@ -58,9 +75,19 @@ func getU(c *gin.Context) {
 }
 
 func SetView(r *gin.Engine) (err error) {
-
+	apiAuth := r.Group("api/auth")
 	api := r.Group("api")
 
+	jwt := middleware.NewJwt()
+	jwt.AddLog(func(arg ...interface{}) {
+		fmt.Println(111, arg)
+	})
+	err = jwt.AddAuth(apiAuth, api)
+	if err != nil {
+		return err
+	}
+
+	// 加载 casbin 必须已登录成功
 	rootGroup := model.NewAuthRootGroup("admin")
 	err = rootGroup.LoadCasbin()
 	if err != nil {

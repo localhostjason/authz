@@ -10,7 +10,7 @@ func SetView(r *gin.Engine) (err error) {
 
 	api := r.Group("api")
 
-    // 加载 casbin
+    // 加载 casbin 必须已登录成功
 	rootGroup := model.NewAuthRootGroup("admin")
 	// rootGroup.LoadCasbinConfig(....) 可自定义加载 casbin 配置
 	err = rootGroup.LoadCasbin()
