@@ -115,8 +115,8 @@ func SetView(r *gin.Engine) (err error) {
 	api := r.Group("api")
 
 	jwt := middleware.NewJwt()
-	jwt.AddLog(func(arg ...interface{}) {
-		fmt.Println(111, arg)
+	jwt.LoadAuthLog(func(code, action, rip, msg string, c *gin.Context) {
+		fmt.Println("login log save to db", code, action, rip, msg)
 	})
 	//jwt.AuthenticatorHook(func(c *gin.Context, username string) error {
 	//	return errors.New("test error")
@@ -131,8 +131,8 @@ func SetView(r *gin.Engine) (err error) {
 
 	// 加载 casbin 必须已登录成功
 	rootGroup := model.NewAuthRootGroup("admin")
-	rootGroup.LoadOpLog(func(arg ...interface{}) {
-		fmt.Println("save op log to db:", arg)
+	rootGroup.LoadOpLog(func(code, action, rip, msg string, c *gin.Context) {
+		fmt.Println("save op log to db:", code, action, rip, msg)
 	})
 	err = rootGroup.LoadCasbin()
 	if err != nil {

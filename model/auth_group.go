@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path"
 	"runtime/debug"
+	"strings"
 	"sync"
 )
 
@@ -98,13 +99,13 @@ func permissionHandler(h gin.HandlerFunc, action, method, role string) gin.Handl
 	var lock sync.Mutex
 	return func(c *gin.Context) {
 		defer func() {
-			result := "成功"
+			msg := ""
 			if r := recover(); r != nil {
 				if err, ok := r.(*ue.Error); ok {
-					result = err.Error()
+					msg = err.Error()
 					c.AbortWithStatusJSON(http.StatusUnprocessableEntity, err)
 				} else {
-					result = "内部错误"
+					msg = "内部错误"
 					log.Error(string(debug.Stack()))
 					c.AbortWithStatus(http.StatusInternalServerError)
 				}
@@ -113,7 +114,11 @@ func permissionHandler(h gin.HandlerFunc, action, method, role string) gin.Handl
 			logMsg, _ := c.Get("OpLog")
 			if OpLogHook != nil {
 				if info, ok := logMsg.(*ue.Info); ok {
-					OpLogHook(action, result, info.Msg)
+					if msg == "" {
+						msg = info.Msg
+					}
+
+					OpLogHook(info.Code, action, RemoteAddr(c), info.Msg, c)
 				}
 			}
 		}()
@@ -151,4 +156,10 @@ func initAuthz(groupName, apiName, url, method string) {
 	if len(authz) == 0 {
 		db.DB.Create(&z)
 	}
+}
+
+func RemoteAddr(c *gin.Context) string {
+	addr := c.Request.RemoteAddr
+	idx := strings.LastIndex(addr, ":")
+	return addr[:idx]
 }

@@ -5,7 +5,7 @@ import (
 	"github.com/localhostjason/authz/store"
 )
 
-var OpLogHook func(arg ...interface{})
+var OpLogHook func(code, action, rip, msg string, c *gin.Context)
 
 type AuthRootGroup struct {
 	UserRole        string
@@ -33,7 +33,7 @@ func (ag *AuthRootGroup) LoadCasbin() error {
 	return nil
 }
 
-func (ag *AuthRootGroup) LoadOpLog(oplog func(arg ...interface{})) {
+func (ag *AuthRootGroup) LoadOpLog(oplog func(code, action, rip, msg string, c *gin.Context)) {
 	OpLogHook = oplog
 }
 

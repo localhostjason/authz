@@ -158,7 +158,8 @@ func unAuth(c *gin.Context, code int, message string) {
 		msg = "未携带身份凭证"
 	}
 
-	AuthLog("LOGIN", user.Username, RemoteAddr(c), "登录", "", "失败:"+msg)
+	IMsg := fmt.Sprintf("用户名：%v，登录失败：%v", user.Username, msg)
+	AuthLog("I_LOGIN", "登录", RemoteAddr(c), IMsg, c)
 	c.JSON(http.StatusUnauthorized, gin.H{
 		"msg":  msg,
 		"desc": desc,
@@ -183,14 +184,16 @@ func loginResponse(c *gin.Context, code int, token string, expire time.Time) {
 		JwtLoginResponseHook(user.Username, password.(string), &info)
 	}
 
-	AuthLog("LOGIN", user.Username, RemoteAddr(c), "登录", "成功")
+	msg := fmt.Sprintf("用户名：%v，登录成功", user.Username)
+	AuthLog("I_LOGIN", "登录", RemoteAddr(c), msg, c)
 	c.JSON(http.StatusOK, info)
 }
 
 // 退出登录
 func logoutResponse(c *gin.Context, code int) {
 	user := CurrentUser(c)
-	AuthLog("LOGOUT", user.Username, RemoteAddr(c), "退出登录", "成功")
+	msg := fmt.Sprintf("用户名：%v，成功退出登录", user.Username)
+	AuthLog("I_LOGOUT", "退出登录", RemoteAddr(c), msg, c)
 	c.Status(201)
 }
 

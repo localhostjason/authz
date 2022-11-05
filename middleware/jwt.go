@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var AuthLog func(arg ...interface{})
+var AuthLog func(code, action, rip, msg string, c *gin.Context)
 
 type loginResponseHookFunc func(username, password string, info *map[string]interface{})
 type authValidateHookFunc func(c *gin.Context, username string) error
@@ -19,7 +19,7 @@ func NewJwt() *Jwt {
 	return &Jwt{}
 }
 
-func (j *Jwt) AddLog(authLog func(arg ...interface{})) {
+func (j *Jwt) LoadAuthLog(authLog func(code, action, rip, msg string, c *gin.Context)) {
 	AuthLog = authLog
 }
 
