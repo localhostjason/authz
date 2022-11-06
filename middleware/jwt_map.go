@@ -159,7 +159,9 @@ func unAuth(c *gin.Context, code int, message string) {
 	}
 
 	IMsg := fmt.Sprintf("用户名：%v，登录失败：%v", user.Username, msg)
-	AuthLog("I_LOGIN", "登录", RemoteAddr(c), IMsg, c)
+	if AuthLog != nil {
+		AuthLog("I_LOGIN", "登录", RemoteAddr(c), IMsg, c)
+	}
 	c.JSON(http.StatusUnauthorized, gin.H{
 		"msg":  msg,
 		"desc": desc,
@@ -185,7 +187,9 @@ func loginResponse(c *gin.Context, code int, token string, expire time.Time) {
 	}
 
 	msg := fmt.Sprintf("用户名：%v，登录成功", user.Username)
-	AuthLog("I_LOGIN", "登录", RemoteAddr(c), msg, c)
+	if AuthLog != nil {
+		AuthLog("I_LOGIN", "登录", RemoteAddr(c), msg, c)
+	}
 	c.JSON(http.StatusOK, info)
 }
 
@@ -193,7 +197,9 @@ func loginResponse(c *gin.Context, code int, token string, expire time.Time) {
 func logoutResponse(c *gin.Context, code int) {
 	user := CurrentUser(c)
 	msg := fmt.Sprintf("用户名：%v，成功退出登录", user.Username)
-	AuthLog("I_LOGOUT", "退出登录", RemoteAddr(c), msg, c)
+	if AuthLog != nil {
+		AuthLog("I_LOGOUT", "退出登录", RemoteAddr(c), msg, c)
+	}
 	c.Status(201)
 }
 
