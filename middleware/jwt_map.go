@@ -127,7 +127,7 @@ func authenticator(c *gin.Context) (interface{}, error) {
 	// 2. 登录过程， 此时不会经过中间件，只是单纯的验证密码，发token,成功了调用 loginResponse,失败顿斯 unauthorized
 	c.Set(currentUserKey, &user)
 	c.Set(currentPassword, password)
-	return user, nil
+	return &user, nil
 
 }
 
