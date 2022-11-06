@@ -22,11 +22,11 @@ const (
 
 const _rootGroupName = "root"
 
-func CreateRootGroup(r *gin.RouterGroup, role string) AuthGroup {
+func CreateRootGroup(r *gin.RouterGroup, roleFunc func(c *gin.Context) string) AuthGroup {
 	g := AuthGroup{
 		Name:        _rootGroupName,
 		Url:         "",
-		Role:        role,
+		RoleFunc:    roleFunc,
 		RouterGroup: r,
 		SubGroup:    nil,
 		Parent:      nil,
@@ -37,7 +37,7 @@ func CreateRootGroup(r *gin.RouterGroup, role string) AuthGroup {
 type AuthGroup struct {
 	Name        string
 	Url         string
-	Role        string
+	RoleFunc    func(c *gin.Context) string
 	RouterGroup *gin.RouterGroup
 	SubGroup    []AuthGroup
 	Parent      *AuthGroup
@@ -52,7 +52,7 @@ func (ag *AuthGroup) Group(name, url string) *AuthGroup {
 	newGroup := AuthGroup{
 		Name:        name,
 		Url:         url,
-		Role:        ag.Role,
+		RoleFunc:    ag.RoleFunc,
 		RouterGroup: r,
 		SubGroup:    nil,
 		Parent:      ag,
@@ -88,14 +88,14 @@ func (ag *AuthGroup) addHandler(method string, url string, h gin.HandlerFunc) {
 
 func (ag *AuthGroup) AddUrl(name, method, url string, h gin.HandlerFunc, permissionRoles ...string) {
 	GroupName := ag.getPermissionGroup()
-	handler := permissionHandler(h, name, method, ag.Role)
+	handler := permissionHandler(h, name, method, ag.RoleFunc)
 	ag.addHandler(method, url, handler)
 
 	fullUrl := path.Join(ag.RouterGroup.BasePath(), url)
 	initAuthz(GroupName, name, fullUrl, method)
 }
 
-func permissionHandler(h gin.HandlerFunc, action, method, role string) gin.HandlerFunc {
+func permissionHandler(h gin.HandlerFunc, action, method string, roleHook func(c *gin.Context) string) gin.HandlerFunc {
 	var lock sync.Mutex
 	return func(c *gin.Context) {
 		defer func() {
@@ -123,7 +123,7 @@ func permissionHandler(h gin.HandlerFunc, action, method, role string) gin.Handl
 			}
 		}()
 
-		if !CasbinHasPermission(c, role) {
+		if !CasbinHasPermission(c, roleHook(c)) {
 			lock.Lock()
 			defer lock.Unlock()
 			h(c)

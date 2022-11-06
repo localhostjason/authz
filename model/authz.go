@@ -8,13 +8,13 @@ import (
 var OpLogHook func(code, action, rip, msg string, c *gin.Context)
 
 type AuthRootGroup struct {
-	UserRole        string
+	UserRole        func(c *gin.Context) string
 	CasBinModelType string
 	CasBinModelText string
 	CasBinModelFile string
 }
 
-func NewAuthRootGroup(userRole string) *AuthRootGroup {
+func NewAuthRootGroup(userRole func(c *gin.Context) string) *AuthRootGroup {
 	return &AuthRootGroup{UserRole: userRole}
 }
 

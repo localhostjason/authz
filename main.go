@@ -130,7 +130,7 @@ func SetView(r *gin.Engine) (err error) {
 	}
 
 	// 加载 casbin 必须已登录成功
-	rootGroup := model.NewAuthRootGroup("admin")
+	rootGroup := model.NewAuthRootGroup(getRole)
 	rootGroup.LoadOpLog(func(code, action, rip, msg string, c *gin.Context) {
 		fmt.Println("save op log to db:", code, action, rip, msg)
 	})
@@ -144,6 +144,10 @@ func SetView(r *gin.Engine) (err error) {
 	AddViewUser(g.Group("用户管理", "user"))
 
 	return
+}
+
+func getRole(c *gin.Context) string {
+	return "admin"
 }
 
 func main() {
