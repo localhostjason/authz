@@ -115,8 +115,8 @@ func authenticator(c *gin.Context) (interface{}, error) {
 		return nil, errors.New("用户名或者密码填写不对")
 	}
 
-	if JwtAuthenticatorHook != nil {
-		if err = JwtAuthenticatorHook(c, userName); err != nil {
+	if JwtAuthenticatorHandler != nil {
+		if err = JwtAuthenticatorHandler(c, userName); err != nil {
 			return nil, err
 		}
 	}
@@ -181,9 +181,9 @@ func loginResponse(c *gin.Context, code int, token string, expire time.Time) {
 	user.LastLoginTime = &now
 	db.DB.Save(user)
 
-	if JwtLoginResponseHook != nil {
+	if JwtLoginResponseHandler != nil {
 		password, _ := c.Get(currentPassword)
-		JwtLoginResponseHook(user.Username, password.(string), &info)
+		JwtLoginResponseHandler(user.Username, password.(string), &info)
 	}
 
 	msg := fmt.Sprintf("用户名：%v，登录成功", user.Username)

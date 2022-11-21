@@ -14,8 +14,6 @@ type User struct {
 	LastLoginTime *time.Time `json:"last_login_time"`
 	Time          time.Time  `json:"time"`                           // 创建时间
 	JwtKey        uuid.UUID  `json:"-" gorm:"type:string;size:128;"` // 为每个用户存一个唯一的jwt key (通用唯一识别码)
-
-	Info map[string]interface{} `json:"info" gorm:"-"`
 }
 
 func (u *User) CheckPassword(password string) bool {

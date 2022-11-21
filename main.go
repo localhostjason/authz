@@ -70,10 +70,10 @@ func SetView(r *gin.Engine) (err error) {
 	jwt.LoadAuthLog(func(code, action, rip, msg string, c *gin.Context) {
 		fmt.Println("login log save to db", code, action, rip, msg)
 	})
-	//jwt.AuthenticatorHook(func(c *gin.Context, username string) error {
+	//jwt.AuthenticatorHandler(func(c *gin.Context, username string) error {
 	//	return errors.New("test error")
 	//})
-	jwt.LoginResponseHook(func(username, password string, info *map[string]interface{}) {
+	jwt.LoginResponseHandler(func(username, password string, info *map[string]interface{}) {
 		(*info)["tt"] = "tt"
 	})
 	err = jwt.AddAuth(apiAuth, api)
