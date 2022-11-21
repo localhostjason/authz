@@ -22,11 +22,10 @@ const (
 
 const _rootGroupName = "root"
 
-func CreateRootGroup(r *gin.RouterGroup, roleFunc func(c *gin.Context) string) AuthGroup {
+func CreateRootGroup(r *gin.RouterGroup) AuthGroup {
 	g := AuthGroup{
 		Name:        _rootGroupName,
 		Url:         "",
-		RoleFunc:    roleFunc,
 		RouterGroup: r,
 		SubGroup:    nil,
 		Parent:      nil,
@@ -37,7 +36,6 @@ func CreateRootGroup(r *gin.RouterGroup, roleFunc func(c *gin.Context) string) A
 type AuthGroup struct {
 	Name        string
 	Url         string
-	RoleFunc    func(c *gin.Context) string
 	RouterGroup *gin.RouterGroup
 	SubGroup    []AuthGroup
 	Parent      *AuthGroup
@@ -52,7 +50,6 @@ func (ag *AuthGroup) Group(name, url string) *AuthGroup {
 	newGroup := AuthGroup{
 		Name:        name,
 		Url:         url,
-		RoleFunc:    ag.RoleFunc,
 		RouterGroup: r,
 		SubGroup:    nil,
 		Parent:      ag,
@@ -88,14 +85,14 @@ func (ag *AuthGroup) addHandler(method string, url string, h gin.HandlerFunc) {
 
 func (ag *AuthGroup) AddUrl(name, method, url string, h gin.HandlerFunc, permissionRoles ...string) {
 	GroupName := ag.getPermissionGroup()
-	handler := permissionHandler(h, name, method, ag.RoleFunc)
+	handler := permissionHandler(h, name, method)
 	ag.addHandler(method, url, handler)
 
 	fullUrl := path.Join(ag.RouterGroup.BasePath(), url)
 	initAuthz(GroupName, name, fullUrl, method)
 }
 
-func permissionHandler(h gin.HandlerFunc, action, method string, roleHook func(c *gin.Context) string) gin.HandlerFunc {
+func permissionHandler(h gin.HandlerFunc, action, method string) gin.HandlerFunc {
 	var lock sync.Mutex
 	return func(c *gin.Context) {
 		defer func() {
@@ -123,26 +120,14 @@ func permissionHandler(h gin.HandlerFunc, action, method string, roleHook func(c
 			}
 		}()
 
-		if !CasbinHasPermission(c, roleHook(c)) {
+		if PermissionsHandler != nil && PermissionsHandler(c) {
+			c.AbortWithStatus(403)
+		} else {
 			lock.Lock()
 			defer lock.Unlock()
 			h(c)
-		} else {
-			c.AbortWithStatus(403)
 		}
 	}
-}
-
-func CasbinHasPermission(ctx *gin.Context, role string) bool {
-	// 获取请求的URI
-	obj := ctx.Request.URL.RequestURI()
-	// 获取请求方法
-	act := ctx.Request.Method
-	// 获取用户的角色
-	sub := role
-	// 判断策略中是否存在
-	success, _ := E.Enforce(sub, obj, act)
-	return success
 }
 
 // 初始化数据

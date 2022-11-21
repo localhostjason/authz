@@ -1,22 +1,39 @@
 # Authz
 
-1. Casbin 库 权限管理
-2. gin router 封装. 用途可初始化路由信息
+1. gin router 封装库. 用途可初始化路由信息
+2. jwt 封装 （可不引入）
 
 例子见 `main.go`
 
 ````
 func SetView(r *gin.Engine) (err error) {
-
+	apiAuth := r.Group("api/auth")
 	api := r.Group("api")
 
-    // 加载 casbin 必须已登录成功
-	rootGroup := model.NewAuthRootGroup("admin")
-	// rootGroup.LoadCasbinConfig(....) 可自定义加载 casbin 配置
-	err = rootGroup.LoadCasbin()
+	jwt := middleware.NewJwt()
+	jwt.LoadAuthLog(func(code, action, rip, msg string, c *gin.Context) {
+		fmt.Println("login log save to db", code, action, rip, msg)
+	})
+	//jwt.AuthenticatorHook(func(c *gin.Context, username string) error {
+	//	return errors.New("test error")
+	//})
+	jwt.LoginResponseHook(func(username, password string, info *map[string]interface{}) {
+		(*info)["tt"] = "tt"
+	})
+	err = jwt.AddAuth(apiAuth, api)
 	if err != nil {
-		return
+		return err
 	}
+
+	rootGroup := model.NewAuthRootGroup()
+	rootGroup.LoadOpLog(func(code, action, rip, msg string, c *gin.Context) {
+		fmt.Println("save op log to db:", code, action, rip, msg)
+	})
+
+	// 加载 Permissions 必须已登录成功
+	rootGroup.LoadPermissionsHandler(func(c *gin.Context) bool {
+		return false
+	})
 
 	g := rootGroup.CreateRootGroup(api)
 
