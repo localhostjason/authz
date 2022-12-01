@@ -100,8 +100,7 @@ func SetView(r *gin.Engine) (err error) {
 
 func main() {
 	// 自定义的配置路径 可配置
-	const defaultConfigPath = "D:\\center\\console\\console.json"
-	s := daemonx.NewMainServer(defaultConfigPath)
+	s := daemonx.NewMainServer()
 	s.LoadView(SetView)
 	s.Run()
 }

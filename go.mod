@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/appleboy/gin-jwt/v2 v2.9.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/localhostjason/webserver v0.0.0-20221121015056-c7bd4fdbb6d5
+	github.com/localhostjason/webserver v0.0.0-20221201130630-a8a18ce59202
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
