@@ -3,13 +3,9 @@ module github.com/localhostjason/authz
 go 1.19
 
 require (
-	github.com/appleboy/gin-jwt/v2 v2.9.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/localhostjason/webserver v0.0.0-20221201130630-a8a18ce59202
-	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.9.0
-	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
-	gorm.io/gorm v1.24.0
 )
 
 require (
@@ -20,7 +16,6 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
-	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
@@ -37,6 +32,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sevlyar/go-daemon v0.1.6 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
+	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
@@ -46,4 +42,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/mysql v1.4.3 // indirect
 	gorm.io/driver/sqlite v1.4.3 // indirect
+	gorm.io/gorm v1.24.0 // indirect
 )

@@ -3,14 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/localhostjason/authz/middleware"
 	"github.com/localhostjason/authz/model"
 	"github.com/localhostjason/webserver/daemonx"
-	"github.com/localhostjason/webserver/db"
 	"github.com/localhostjason/webserver/server/util/ue"
 	"github.com/localhostjason/webserver/server/util/uv"
-	uuid "github.com/satori/go.uuid"
-	"time"
 )
 
 const (
@@ -23,30 +19,6 @@ var iMap = map[string]ue.Info{
 
 func init() {
 	ue.RegInfos(iMap)
-}
-
-type User struct {
-	middleware.User
-	Descx string `json:"descx"`
-	Role  string `json:"role" gorm:"type:string;size:64;not null"`
-	Desc  string `json:"desc" gorm:"type:string;size:256"`
-}
-
-func InitUser() error {
-	user := User{
-		Role: "admin",
-	}
-	user.Username = "admin"
-	user.JwtKey = uuid.NewV4()
-	user.Time = time.Now()
-	user.SetPassword("123")
-	db.DB.FirstOrCreate(&user)
-	return nil
-}
-
-func init() {
-	db.RegTables(&User{})
-	db.AddInitHook(InitUser)
 }
 
 func AddViewUserItem(g *model.AuthGroup) {
@@ -63,23 +35,7 @@ func getU(c *gin.Context) {
 }
 
 func SetView(r *gin.Engine) (err error) {
-	apiAuth := r.Group("api/auth")
 	api := r.Group("api")
-
-	jwt := middleware.NewJwt()
-	jwt.LoadAuthLog(func(code, action, rip, msg string, c *gin.Context) {
-		fmt.Println("login log save to db", code, action, rip, msg)
-	})
-	//jwt.AuthenticatorHandler(func(c *gin.Context, username string) error {
-	//	return errors.New("test error")
-	//})
-	jwt.LoginResponseHandler(func(username, password string, info *map[string]interface{}) {
-		(*info)["tt"] = "tt"
-	})
-	err = jwt.AddAuth(apiAuth, api)
-	if err != nil {
-		return err
-	}
 
 	rootGroup := model.NewAuthRootGroup()
 	rootGroup.LoadOpLog(func(code, action, rip, msg string, c *gin.Context) {

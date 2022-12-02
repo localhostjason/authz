@@ -1,29 +1,13 @@
 # Authz
 
 1. gin router 封装库. 用途可初始化路由信息
-2. jwt 封装 （可不引入）
+
 
 例子见 `main.go`
 
 ````
 func SetView(r *gin.Engine) (err error) {
-	apiAuth := r.Group("api/auth")
 	api := r.Group("api")
-
-	jwt := middleware.NewJwt()
-	jwt.LoadAuthLog(func(code, action, rip, msg string, c *gin.Context) {
-		fmt.Println("login log save to db", code, action, rip, msg)
-	})
-	//jwt.AuthenticatorHook(func(c *gin.Context, username string) error {
-	//	return errors.New("test error")
-	//})
-	jwt.LoginResponseHook(func(username, password string, info *map[string]interface{}) {
-		(*info)["tt"] = "tt"
-	})
-	err = jwt.AddAuth(apiAuth, api)
-	if err != nil {
-		return err
-	}
 
 	rootGroup := model.NewAuthRootGroup()
 	rootGroup.LoadOpLog(func(code, action, rip, msg string, c *gin.Context) {
